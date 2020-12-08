@@ -22,6 +22,11 @@
 **/
 Piezas::Piezas()
 {
+    board.resize(BOARD_ROWS);
+    for(int i = 0; i < BOARD_ROWS; i++)
+        board[i].resize(BOARD_COLS);
+    reset();
+    turn = X;
 }
 
 /**
@@ -30,6 +35,13 @@ Piezas::Piezas()
 **/
 void Piezas::reset()
 {
+    for(int i = 0; i < BOARD_ROWS; i++)
+    {
+        for(int j =  0; j < BOARD_COLS; j++)
+        {
+            board[i][j] = Blank; 
+        }
+    }
 }
 
 /**
@@ -42,6 +54,23 @@ void Piezas::reset()
 **/ 
 Piece Piezas::dropPiece(int column)
 {
+    if(column < 0 || column >= BOARD_COLS)
+    {
+        turn = (turn == X) ? O : X;
+        return Invalid;
+    }
+
+    for(int i = 0; i < BOARD_ROWS; i++)
+    {
+        if(board[i][column] == Blank)
+        {
+            Piece placed = turn;
+            board[i][column] = placed;
+            turn = (turn == X) ? O : X;
+            return placed;
+        }
+    }
+
     return Blank;
 }
 
@@ -51,7 +80,9 @@ Piece Piezas::dropPiece(int column)
 **/
 Piece Piezas::pieceAt(int row, int column)
 {
-    return Blank;
+    if(row < 0 || row >= BOARD_ROWS || column < 0 || column >= BOARD_COLS)
+        return Invalid;
+    return board[row][column];
 }
 
 /**
@@ -65,5 +96,58 @@ Piece Piezas::pieceAt(int row, int column)
 **/
 Piece Piezas::gameState()
 {
-    return Blank;
+    int maxX, maxO;
+    maxX = maxO = -1;
+    for(int i = 0; i < BOARD_ROWS; i++)
+    {
+        int xCount = 0;
+        int oCount = 0;
+        for(int j = 0; j < BOARD_COLS; j++)
+        {
+            if(board[i][j] == Blank)
+                return Invalid;
+
+            if(board[i][j] == X)
+            {
+                xCount++;
+                oCount = 0;
+            } 
+            if(board[i][j] == O)
+            {
+                oCount++;
+                xCount = 0;
+            } 
+
+            if(xCount > maxX)
+                maxX = xCount;
+            if(oCount > maxO)
+                maxO = oCount;
+        }
+    }
+    for(int j = 0; j < BOARD_COLS; j++)
+    {
+        int xCount = 0;
+        int oCount = 0;
+        for(int i = 0; i < BOARD_ROWS; i++)
+        {
+            if(board[i][j] == X)
+            {
+                xCount++;
+                oCount = 0;
+            } 
+            if(board[i][j] == O)
+            {
+                oCount++;
+                xCount = 0;
+            } 
+
+            if(xCount > maxX)
+                maxX = xCount;
+            if(oCount > maxO)
+                maxO = oCount;
+        }
+    }
+    if(maxX == maxO)
+        return Blank;
+    return (maxX > maxO) ? X : O;
 }
